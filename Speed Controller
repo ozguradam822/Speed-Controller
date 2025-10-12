@@ -1,0 +1,191 @@
+-- LocalScript
+local player = game.Players.LocalPlayer
+local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+-- GUI oluşturma
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SpeedGUI"
+ScreenGui.Parent = game.CoreGui
+
+-- Ana Frame
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0, 400, 0, 250)
+Frame.Position = UDim2.new(0.5, -200, 0.5, -125)
+Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Frame.BorderSizePixel = 0
+Frame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 15)
+UICorner.Parent = Frame
+
+-- Başlık
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -80, 0, 40)
+Title.Position = UDim2.new(0, 10, 0, 0)
+Title.BackgroundTransparency = 1
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextScaled = true
+Title.Font = Enum.Font.SourceSansBold
+Title.Text = "Speed Controller"
+Title.Parent = Frame
+
+-- Kapat Butonu (X)
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 40, 0, 40)
+CloseBtn.Position = UDim2.new(1, -40, 0, 0)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.Font = Enum.Font.SourceSansBold
+CloseBtn.TextScaled = true
+CloseBtn.Text = "X"
+CloseBtn.Parent = Frame
+
+-- Minimize Butonu (-)
+local MinBtn = Instance.new("TextButton")
+MinBtn.Size = UDim2.new(0, 40, 0, 40)
+MinBtn.Position = UDim2.new(1, -80, 0, 0)
+MinBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+MinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinBtn.Font = Enum.Font.SourceSansBold
+MinBtn.TextScaled = true
+MinBtn.Text = "-"
+MinBtn.Parent = Frame
+
+-- Hız Label
+local SpeedLabel = Instance.new("TextLabel")
+SpeedLabel.Size = UDim2.new(1, 0, 0, 50)
+SpeedLabel.Position = UDim2.new(0, 0, 0, 50)
+SpeedLabel.BackgroundTransparency = 1
+SpeedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedLabel.TextScaled = true
+SpeedLabel.Text = "Speed: 16"
+SpeedLabel.Parent = Frame
+
+-- Bilgi Label
+local infoLabel = Instance.new("TextLabel")
+infoLabel.Size = UDim2.new(1, 0, 0, 40)
+infoLabel.Position = UDim2.new(0, 0, 0, 210)
+infoLabel.BackgroundTransparency = 1
+infoLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+infoLabel.TextScaled = true
+infoLabel.Text = "Use + / - to change speed"
+infoLabel.Parent = Frame
+
+-- Reset Button
+local ResetBtn = Instance.new("TextButton")
+ResetBtn.Size = UDim2.new(0, 120, 0, 35)
+ResetBtn.Position = UDim2.new(0.5, -60, 0, 160)
+ResetBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 200)
+ResetBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ResetBtn.Font = Enum.Font.SourceSansBold
+ResetBtn.TextScaled = true
+ResetBtn.Text = "Reset Default"
+ResetBtn.Parent = Frame
+
+-- Başlangıç hızı
+local defaultSpeed = 16
+local speed = defaultSpeed
+
+local function updateSpeed()
+	if player.Character and player.Character:FindFirstChild("Humanoid") then
+		player.Character.Humanoid.WalkSpeed = speed
+		SpeedLabel.Text = "Speed: " .. speed
+	end
+end
+
+-- Bilgilendirme mesajı (minimize sonrası)
+local HintLabel = Instance.new("TextLabel")
+HintLabel.Size = UDim2.new(0, 400, 0, 50)
+HintLabel.Position = UDim2.new(0.5, -200, 0.5, -25)
+HintLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+HintLabel.BackgroundTransparency = 0.4
+HintLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+HintLabel.TextScaled = true
+HintLabel.Font = Enum.Font.SourceSansBold
+HintLabel.Text = ""
+HintLabel.Visible = false
+HintLabel.Parent = ScreenGui
+
+-- Fonksiyon: mesaj göster
+local function showHint()
+	HintLabel.Text = "Press K to open Speed Controller"
+	HintLabel.Visible = true
+	TweenService:Create(HintLabel, TweenInfo.new(0.5), {BackgroundTransparency = 0.4}):Play()
+	task.wait(3)
+	HintLabel.Visible = false
+end
+
+-- Kapatma
+CloseBtn.MouseButton1Click:Connect(function()
+	Frame.Visible = false
+end)
+
+-- Minimize
+MinBtn.MouseButton1Click:Connect(function()
+	Frame.Visible = false
+	showHint()
+end)
+
+-- K tuşuna basıldığında tekrar aç
+UIS.InputBegan:Connect(function(input, processed)
+	if not processed and input.KeyCode == Enum.KeyCode.K then
+		Frame.Visible = not Frame.Visible
+	end
+end)
+
+-- Reset butonu
+ResetBtn.MouseButton1Click:Connect(function()
+	speed = defaultSpeed
+	updateSpeed()
+end)
+
+-- + / - tuşları
+UIS.InputBegan:Connect(function(input, processed)
+	if processed then return end
+	if input.KeyCode == Enum.KeyCode.Equals or input.KeyCode == Enum.KeyCode.KeypadPlus then
+		speed = speed + 1
+		updateSpeed()
+	elseif input.KeyCode == Enum.KeyCode.Minus or input.KeyCode == Enum.KeyCode.KeypadMinus then
+		speed = math.max(0, speed - 1)
+		updateSpeed()
+	end
+end)
+
+-- Karakter yeniden doğarsa
+player.CharacterAdded:Connect(function()
+	task.wait(0.1)
+	updateSpeed()
+end)
+
+updateSpeed()
+
+-- 🧲 Sürükleme özelliği
+local dragging = false
+local dragStart, startPos
+
+local function update(input)
+	local delta = input.Position - dragStart
+	Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+Frame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = Frame.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+UIS.InputChanged:Connect(function(input)
+	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+		update(input)
+	end
+end)
